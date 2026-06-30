@@ -21,10 +21,10 @@
 #define DHTTYPE DHT22
 
 // CREDENTIALS
-const char *ssid = "Picasso";
-const char *password = "22222222";
-#define BOT_TOKEN "8964535945:AAFDAOCQEYLrp6MVU71mLFrPlJWE0EweDJE"
-String chatID = "5627733104";
+const char *ssid = "SSID_WIFI_HERE";
+const char *password = "PASS_WIFI_HERE";
+#define BOT_TOKEN "BOT_TOKEN_HERE" // Ganti dengan token bot Telegram Anda
+String chatID = "CHAT_ID_HERE"; // Ganti dengan chat ID Anda
 
 // OBJECTS
 WiFiClientSecure client;
