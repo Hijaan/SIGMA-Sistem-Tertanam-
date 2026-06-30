@@ -1,10 +1,10 @@
-# SIGMA v1.0
+# SIGMA v2.0
 
 ### Smart IoT for Gas, teMperature, and electrical Automation
 
-SIGMA v1.0 merupakan sistem Smart Room berbasis ESP32 yang dirancang untuk monitoring suhu, kelembapan, gas berbahaya, serta deteksi api secara real-time menggunakan platform IoT Blynk.
+SIGMA v2.0 merupakan pembaruan dari sistem Smart Room yang kini berbasis **ESP32-S3**. Sistem ini dirancang untuk monitoring suhu, kelembapan, gas berbahaya, serta deteksi api secara *real-time* dengan integrasi langsung ke **Telegram Bot** dan dukungan pembaruan nirkabel (OTA).
 
-Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis, dan notifikasi cloud untuk meningkatkan keamanan ruangan secara otomatis dan efisien.
+Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis (untuk lampu dan stop kontak/kipas), serta notifikasi *cloud* untuk meningkatkan keamanan ruangan secara otomatis dan efisien tanpa bergantung pada platform pihak ketiga yang berbayar.
 
 ---
 
@@ -14,48 +14,46 @@ Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis, da
 
 * Monitoring suhu menggunakan DHT22
 * Monitoring kelembapan ruangan
-* Monitoring gas menggunakan sensor MQ7
-* Deteksi api menggunakan sensor KY-026
+* Monitoring gas Karbon Monoksida menggunakan sensor MQ7
+* Deteksi api menggunakan sensor Flame (KY-026)
 
 ---
 
 ## 🚨 Sistem Keamanan
 
 * Alarm buzzer bertingkat:
-
-  * Mode Warning
-  * Mode Critical
-* Deteksi gas berbahaya
-* Deteksi api secara realtime
-* StopKontak yang terhubung dengan kipas otomatis saat kondisi bahaya
-* Sistem reset aman (alarm tidak dapat di-reset jika kondisi masih berbahaya)
+  * **Mode Warning:** Peringatan gas mulai tinggi.
+  * **Mode Critical:** Deteksi gas berbahaya atau api.
+* Stop Kontak keamanan yang memutus/mengambil alih arus secara otomatis saat kondisi bahaya.
+* Sistem *Fail-safe Lock* (Alarm dan Relay akan terkunci saat bahaya dan hanya bisa di-reset manual melalui Telegram).
+* Push notification darurat instan via Telegram.
 
 ---
 
 ## 💡 Otomasi
 
-* Kontrol lampu menggunakan relay
-* Kontrol stopkontak yang terhubung dengan kipas menggunakan relay
-* Penjadwalan lampu otomatis menggunakan RTC DS3231
-* Kontrol manual melalui aplikasi Blynk
+* Kontrol Lampu menggunakan relay.
+* Kontrol Stop Kontak (kipas/exhaust) menggunakan relay.
+* Penjadwalan otomatis menyala/mati menggunakan RTC DS3231 (Mendukung rentang waktu melintasi tengah malam).
+* Sistem pendingin otomatis (Stop kontak otomatis menyala jika suhu > 35°C).
 
 ---
 
-## 📡 Integrasi IoT
+## 📡 Integrasi IoT & Kendali Jarak Jauh
 
-* Monitoring realtime menggunakan Blynk
-* Push notification saat kondisi darurat
-* Remote monitoring melalui smartphone
-* Kontrol aktuator dari jarak jauh
+* Integrasi **Telegram Bot** untuk kontrol penuh (Tanpa Blynk).
+* Kontrol mode **Auto / Manual** secara independen untuk Lampu dan Stop Kontak.
+* Pengecekan status sensor *real-time* dengan perintah `/status`.
+* **OTA (Over-The-Air) Updates:** Mendukung pembaruan *firmware* via WiFi tanpa kabel USB.
 
 ---
 
 ## ⚙️ Sistem Embedded
 
-* Arsitektur non-blocking
-* PWM passive buzzer menggunakan LEDC ESP32
-* Moving average filter untuk stabilisasi sensor MQ7
-* WiFi modem sleep untuk efisiensi daya
+* Arsitektur *non-blocking* menggunakan `millis()`.
+* Moving average filter untuk stabilisasi pembacaan sensor MQ7.
+* Manajemen status (*State-based*) alarm system.
+* Sinkronisasi RTC cerdas (Hanya mengatur waktu jika RTC kehilangan daya).
 
 ---
 
@@ -63,50 +61,54 @@ Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis, da
 
 | Komponen       | Fungsi                   |
 | -------------- | ------------------------ |
-| ESP32          | Mikrokontroler utama     |
+| ESP32-S3       | Mikrokontroler utama     |
 | DHT22          | Sensor suhu & kelembapan |
-| MQ7            | Sensor gas               |
-| KY-026         | Sensor api               |
+| MQ7            | Sensor gas CO            |
+| Flame Sensor   | Sensor api               |
 | DS3231         | RTC (Real Time Clock)    |
-| Passive Buzzer | Alarm suara              |
-| Relay Module   | Kontrol lampu & exhaust  |
+| Active Buzzer  | Alarm suara              |
+| Relay 2 Channel| Kontrol lampu & stop kontak |
 
 ---
 
-# 🔌 Konfigurasi Pin
+# 🔌 Konfigurasi Pin (Updated for ESP32-S3)
 
-| Perangkat     | GPIO    |
-| ------------- | ------- |
-| DHT22         | GPIO 21 |
-| MQ7           | GPIO 34 |
-| Flame Sensor  | GPIO 35 |
-| RTC SDA       | GPIO 21 |
-| RTC SCL       | GPIO 22 |
-| Buzzer        | GPIO 25 |
-| Relay Lampu   | GPIO 26 |
-| Relay Exhaust | GPIO 27 |
+| Perangkat         | GPIO    | Keterangan |
+| ----------------- | ------- | ---------- |
+| Buzzer            | GPIO 4  | OUTPUT     |
+| MQ7 (Gas CO)      | GPIO 5  | INPUT (ADC)|
+| Flame Sensor      | GPIO 6  | INPUT      |
+| DHT22             | GPIO 7  | DATA       |
+| RTC SDA           | GPIO 8  | I2C        |
+| RTC SCL           | GPIO 9  | I2C        |
+| Relay Lampu       | GPIO 10 | OUTPUT     |
+| Relay Stop Kontak | GPIO 20 | OUTPUT     |
 
 ---
 
-# 📱 Virtual Pin Blynk
+# 📱 Daftar Perintah Telegram Bot
 
-| Virtual Pin | Fungsi             |
-| ----------- | ------------------ |
-| V0          | Suhu               |
-| V1          | Kelembapan         |
-| V2          | Nilai MQ7          |
-| V3          | Kontrol Lampu      |
-| V4          | Kontrol Exhaust    |
-| V7          | Test Alarm         |
-| V8          | Status Deteksi Api |
-| V9          | Reset Alarm        |
+Alih-alih menggunakan Virtual Pin Blynk, SIGMA v2.0 dikontrol sepenuhnya melalui perintah Telegram:
+
+| Perintah | Fungsi |
+| :--- | :--- |
+| `/status` | Menampilkan ringkasan data sensor dan jadwal |
+| `/set_lampu_on [Jam]` | Mengubah jadwal lampu menyala |
+| `/set_lampu_off [Jam]`| Mengubah jadwal lampu mati |
+| `/set_stop_on [Jam]`  | Mengubah jadwal stop kontak menyala |
+| `/set_stop_off [Jam]` | Mengubah jadwal stop kontak mati |
+| `/lampu_on` / `/lampu_off` | Kontrol manual lampu (Override RTC) |
+| `/stop_on` / `/stop_off` | Kontrol manual stop kontak (Override RTC) |
+| `/auto` | Mengembalikan kontrol lampu & stop kontak ke jadwal RTC |
+| `/manual` | Menonaktifkan jadwal RTC |
+| `/reset` | Membuka kunci sistem (*unlock*) setelah alarm bahaya |
 
 ---
 
 # 📂 Struktur Proyek
 
 ```text
-SIGMA-v1.0/
+SIGMA-v2.0/
 │
 ├── src/
 │   └── main.cpp
@@ -117,127 +119,6 @@ SIGMA-v1.0/
 │
 ├── docs/
 │
-├── test/
-│
 ├── platformio.ini
 │
 └── README.md
-```
-
----
-
-# ⚡ Alur Sistem
-
-```text
-Pembacaan Sensor
-        ↓
-Filtering Data
-        ↓
-Logika Alarm
-        ↓
-Kontrol Relay & Buzzer
-        ↓
-Notifikasi Blynk
-```
-
----
-
-# 🔥 Logika Alarm
-
-## Warning Gas
-
-Aktif ketika nilai MQ7 melewati threshold warning.
-
-## Critical Gas
-
-Aktif ketika nilai MQ7 melewati threshold critical:
-
-* Exhaust fan menyala
-* Alarm aktif
-* Notifikasi dikirim ke Blynk
-
-## Deteksi Api
-
-Aktif ketika sensor KY-026 mendeteksi api:
-
-* Exhaust menyala
-* Lampu dimatikan
-* Alarm aktif
-* Notifikasi darurat dikirim
-
----
-
-# 🧠 Konsep Embedded System yang Digunakan
-
-* State-based alarm system
-* Non-blocking timing menggunakan millis()
-* Moving average filtering
-* Fail-safe reset logic
-* PWM tone generation
-* IoT telemetry
-* Sistem monitoring realtime
-
----
-
-# 📋 Bug dan Kendala Saat Ini (SIGMA v1.0)
-
-## False Trigger pada Sensor Api
-
-Sensor KY-026 masih berpotensi menghasilkan deteksi palsu akibat noise dan sensitivitas cahaya.
-Rencana Perbaikan:
-
-* Debounce software
-* Stable sampling
-* Kalibrasi threshold
-
----
-
-## Warmup Sensor MQ7
-
-Sensor MQ7 membutuhkan waktu warmup sebelum pembacaan menjadi stabil.
-
-Rencana Perbaikan:
-
-* Sistem warmup saat startup
-* Mode kalibrasi sensor
-
----
-
-## RTC Masih Auto Adjust
-
-RTC masih melakukan penyesuaian waktu setiap board restart/upload.
-Rencana Perbaikan:
-
-* Menggunakan rtc.lostPower()
-* Menonaktifkan auto-adjust setelah setup awal
-
----
-
-## Kontrol Manual dan Otomatis Lampu Masih Konflik
-
-Kontrol manual lampu dari Blynk masih dapat tertimpa oleh scheduler otomatis RTC.
-
-Rencana Perbaikan:
-
-* Sistem manual override
-
----
-
-# Pengembangan SIGMA v2.0
-
-Fitur yang direncanakan:
-
-* Integrasi dengan telegram untuk notifikasi darurat
-
----
-
-# Tim Pengembang
-
-Kelompok 6 — Sistem Tertanam
-
-1. Hasbi Ma’arif
-2. Luthfy Dian Afrizal
-3. Syallomitha Clara Halelia Wangania
-4. Syahwa Novianti Eka Nugraha
-
-Institut Teknologi Kalimantan
