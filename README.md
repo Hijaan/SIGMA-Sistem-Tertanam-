@@ -4,7 +4,7 @@
 
 SIGMA v2.0 merupakan pembaruan dari sistem Smart Room yang kini berbasis **ESP32-S3**. Sistem ini dirancang untuk monitoring suhu, kelembapan, gas berbahaya, serta deteksi api secara *real-time* dengan integrasi langsung ke **Telegram Bot** dan dukungan pembaruan nirkabel (OTA).
 
-Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis (untuk lampu dan stop kontak/kipas), serta notifikasi *cloud* untuk meningkatkan keamanan ruangan secara otomatis dan efisien tanpa bergantung pada platform pihak ketiga yang berbayar.
+Sistem ini mengintegrasikan sensor lingkungan, alarm darurat, relay otomatis (untuk lampu dan stop kontak/kipas), serta notifikasi *Telegram* untuk meningkatkan keamanan ruangan secara otomatis dan efisien tanpa bergantung pada platform pihak ketiga yang berbayar.
 
 ---
 
